@@ -1,155 +1,135 @@
 import type { Request, Response } from "express";
 import { PostsModel } from "../models/PostsModel";
 
-// Admin Dashboard - Show posts list
-export const adminDashboardController = (req: Request, res: Response) => {
-  const posts = PostsModel.getAllPosts();
+// Helper function to handle JSON/redirect responses
+const handleResponse = (
+  req: Request,
+  res: Response,
+  options: {
+    success: boolean;
+    statusCode: number;
+    jsonData?: any;
+    redirectUrl: string;
+    errorMessage?: string;
+  },
+) => {
+  const { success, statusCode, jsonData, redirectUrl, errorMessage } = options;
 
-  res.render("admin/posts-list", {
-    meta: {
-      title: "Admin - Manage Posts",
-    },
-    posts,
-  });
+  if (req.headers.accept?.includes("application/json")) {
+    return res.status(statusCode).json(jsonData);
+  }
+
+  return res.redirect(redirectUrl);
 };
 
 // List all posts for admin
 export const adminPostsListController = (req: Request, res: Response) => {
   const posts = PostsModel.getAllPosts();
-
   res.render("admin/posts-list", {
-    meta: {
-      title: "Manage Posts",
-    },
+    meta: { title: "Manage Posts" },
     posts,
   });
 };
 
-// Show create post form
-export const adminCreatePostController = (req: Request, res: Response) => {
-  res.render("admin/post-form", {
-    meta: {
-      title: "Create New Post",
-    },
-    isEdit: false,
-  });
-};
-
-// Show edit post form
-export const adminEditPostController = (req: Request, res: Response) => {
+// Show create/edit post form
+export const adminPostFormController = (req: Request, res: Response) => {
   const id = req.params.id;
-  const post = PostsModel.getPostById(id);
 
-  if (!post) {
-    return res.status(404).render("404", {
-      meta: {
-        title: "Post Not Found",
-      },
-    });
-  }
-
-  res.render("admin/post-form", {
-    meta: {
-      title: `Edit: ${post.title}`,
-    },
-    post,
-    id,
-    isEdit: true,
-  });
-};
-
-// Handle create post submission
-export const adminCreatePostSubmitController = async (
-  req: Request,
-  res: Response,
-) => {
-  try {
-    const { title, author, teaser, content, image } = req.body;
-
-    const newPost = PostsModel.addPost({
-      title,
-      author,
-      teaser,
-      content,
-      image,
-      createdAt: Math.floor(Date.now() / 1000), // Current timestamp
-    });
-
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(201)
-        .contentType("application/json")
-        .json({ success: true, post: newPost });
+  if (id) {
+    // Edit mode
+    const post = PostsModel.getPostById(id);
+    if (!post) {
+      return res.status(404).render("404", {
+        meta: { title: "Post Not Found" },
+      });
     }
 
-    // Redirect to posts list with success message (form submission)
-    res.redirect("/admin/posts?success=created");
-  } catch (error) {
-    console.error("Error creating post:", error);
-
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(500)
-        .contentType("application/json")
-        .json({ success: false, error: "Creation failed" });
-    }
-
-    res.redirect("/admin/posts/new?error=creation_failed");
+    res.render("admin/post-form", {
+      meta: { title: `Edit: ${post.title}` },
+      post,
+      id,
+      isEdit: true,
+    });
+  } else {
+    // Create mode
+    res.render("admin/post-form", {
+      meta: { title: "Create New Post" },
+      isEdit: false,
+      currentTimestamp: Math.floor(Date.now() / 1000),
+    });
   }
 };
 
-// Handle edit post submission
-export const adminEditPostSubmitController = async (
+// Handle create/edit post submission
+export const adminPostSubmitController = async (
   req: Request,
   res: Response,
 ) => {
   try {
     const id = req.params.id;
-    const { title, author, teaser, content, image } = req.body;
+    const { title, author, teaser, content, image, createdAt } = req.body;
+    const isEdit = !!id;
 
-    const updatedPost = PostsModel.updatePost(id, {
-      title,
-      author,
-      teaser,
-      content,
-      image,
-      createdAt: Math.floor(Date.now() / 1000),
+    let result;
+    if (isEdit) {
+      // When editing, preserve the original createdAt from the existing post
+      const existingPost = PostsModel.getPostById(id);
+      result = PostsModel.updatePost(id, {
+        title,
+        author,
+        teaser,
+        content,
+        image,
+        createdAt:
+          existingPost?.createdAt ||
+          parseInt(createdAt) ||
+          Math.floor(Date.now() / 1000),
+      });
+    } else {
+      // When creating, use the provided createdAt or current timestamp
+      result = PostsModel.addPost({
+        title,
+        author,
+        teaser,
+        content,
+        image,
+        createdAt: parseInt(createdAt) || Math.floor(Date.now() / 1000),
+      });
+    }
+
+    if (!result && isEdit) {
+      return handleResponse(req, res, {
+        success: false,
+        statusCode: 404,
+        jsonData: { success: false, error: "Post not found" },
+        redirectUrl: "/admin/posts?error=post_not_found",
+      });
+    }
+
+    const action = isEdit ? "updated" : "created";
+    return handleResponse(req, res, {
+      success: true,
+      statusCode: isEdit ? 200 : 201,
+      jsonData: { success: true, post: result },
+      redirectUrl: `/admin/posts?success=${action}`,
     });
-
-    if (!updatedPost) {
-      // Check if request expects JSON (AJAX request)
-      if (req.headers.accept?.includes("application/json")) {
-        return res
-          .status(404)
-          .contentType("application/json")
-          .json({ success: false, error: "Post not found" });
-      }
-      return res.status(404).redirect("/admin/posts?error=post_not_found");
-    }
-
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(200)
-        .contentType("application/json")
-        .json({ success: true, post: updatedPost });
-    }
-
-    res.redirect("/admin/posts?success=updated");
   } catch (error) {
-    console.error("Error updating post:", error);
+    console.error(
+      `Error ${req.params.id ? "updating" : "creating"} post:`,
+      error,
+    );
 
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(500)
-        .contentType("application/json")
-        .json({ success: false, error: "Update failed" });
-    }
+    const action = req.params.id ? "update" : "creation";
+    const fallbackUrl = req.params.id
+      ? `/admin/posts/${req.params.id}/edit?error=${action}_failed`
+      : "/admin/posts/new?error=creation_failed";
 
-    res.redirect(`/admin/posts/${req.params.id}/edit?error=update_failed`);
+    return handleResponse(req, res, {
+      success: false,
+      statusCode: 500,
+      jsonData: { success: false, error: `${action} failed` },
+      redirectUrl: fallbackUrl,
+    });
   }
 };
 
@@ -163,36 +143,28 @@ export const adminDeletePostController = async (
     const success = PostsModel.deletePost(id);
 
     if (!success) {
-      // Check if request expects JSON (AJAX request)
-      if (req.headers.accept?.includes("application/json")) {
-        return res
-          .status(404)
-          .contentType("application/json")
-          .json({ success: false, error: "Post not found" });
-      }
-      return res.status(404).redirect("/admin/posts?error=post_not_found");
+      return handleResponse(req, res, {
+        success: false,
+        statusCode: 404,
+        jsonData: { success: false, error: "Post not found" },
+        redirectUrl: "/admin/posts?error=post_not_found",
+      });
     }
 
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(200)
-        .contentType("application/json")
-        .json({ success: true, message: "Post deleted successfully" });
-    }
-
-    res.redirect("/admin/posts?success=deleted");
+    return handleResponse(req, res, {
+      success: true,
+      statusCode: 200,
+      jsonData: { success: true, message: "Post deleted successfully" },
+      redirectUrl: "/admin/posts?success=deleted",
+    });
   } catch (error) {
     console.error("Error deleting post:", error);
 
-    // Check if request expects JSON (AJAX request)
-    if (req.headers.accept?.includes("application/json")) {
-      return res
-        .status(500)
-        .contentType("application/json")
-        .json({ success: false, error: "Deletion failed" });
-    }
-
-    res.redirect("/admin/posts?error=deletion_failed");
+    return handleResponse(req, res, {
+      success: false,
+      statusCode: 500,
+      jsonData: { success: false, error: "Deletion failed" },
+      redirectUrl: "/admin/posts?error=deletion_failed",
+    });
   }
 };

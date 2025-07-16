@@ -4,18 +4,28 @@ import dayjs from "dayjs";
 import postsData from "../../data/posts.json";
 import fs from "fs";
 import path from "path";
-import { randomUUID } from "crypto";
 
 export class PostsModel {
   private static posts: Post[] = PostsModel.loadPosts();
 
   private static loadPosts(): Post[] {
-    return postsData.map((post: Post) => ({
+    return postsData.map((post: any) => ({
       ...post,
-      id: post.id || randomUUID(), // Generate ID if it doesn't exist
+      id: post.id || this.generateNextId(), // Generate sequential ID if it doesn't exist
+      image: post.image ?? "",
       slug: slugify(post.title, { lower: true, strict: true }),
       formattedDate: dayjs(post.createdAt * 1000).format("MMMM D, YYYY"),
     }));
+  }
+
+  private static generateNextId(): string {
+    // Get all current posts from the data, not this.posts which might be empty during loading
+    const currentPosts = postsData as Post[];
+    const existingIds = currentPosts
+      .map((post) => parseInt(post.id!))
+      .filter((id) => !isNaN(id));
+    const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
+    return (maxId + 1).toString();
   }
 
   static getAllPosts(): Post[] {
@@ -33,7 +43,7 @@ export class PostsModel {
   static addPost(postData: Post): Post {
     const newPost: Post = {
       ...postData,
-      id: randomUUID(),
+      id: this.generateNextId(),
       slug: slugify(postData.title, { lower: true, strict: true }),
       formattedDate: dayjs(postData.createdAt * 1000).format("MMMM D, YYYY"),
     };
