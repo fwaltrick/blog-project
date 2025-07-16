@@ -1,0 +1,28 @@
+{% extends "_layout.html" %}
+{% from "_macros.html" import pageHeader %}
+
+{% block page_title %}Page Not Found{% endblock %}
+
+{% block main_content %}
+
+  {{
+    pageHeader(
+        title='404 - Page Not Found',
+        subtitle='Oops! The page you are looking for could not be found.',
+        image_url='/images/error-404.jpg'
+    )
+  }}
+
+  <main class="mb-4">
+    <div class="container px-4 px-lg-5">
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7 text-center">
+          <p>It seems you entered a URL that doesn't exist on this site.</p>
+          <a class="btn btn-primary text-uppercase" href="/"
+            >← Go back to the homepage</a
+          >
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

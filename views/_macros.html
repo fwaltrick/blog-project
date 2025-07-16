@@ -1,0 +1,243 @@
+<!-- Navigation-->
+{% macro navigation() %}
+  <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+    <div class="container px-4 px-lg-5">
+      <a class="navbar-brand" href="/">Start Bootstrap</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarResponsive"
+        aria-controls="navbarResponsive"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ms-auto py-4 py-lg-0">
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="/about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-lg-3 py-3 py-lg-4" href="/contact">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+{% endmacro %}
+
+<!-- Footer-->
+{% macro footer() %}
+  <footer class="border-top">
+    <div class="container px-4 px-lg-5">
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+          <ul class="list-inline text-center">
+            <li class="list-inline-item">
+              <a href="#!"
+                ><span class="fa-stack fa-lg"
+                  ><i class="fas fa-circle fa-stack-2x"></i
+                  ><i class="fab fa-twitter fa-stack-1x fa-inverse"></i></span
+              ></a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#!"
+                ><span class="fa-stack fa-lg"
+                  ><i class="fas fa-circle fa-stack-2x"></i
+                  ><i
+                    class="fab fa-facebook-f fa-stack-1x fa-inverse"
+                  ></i></span
+              ></a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#!"
+                ><span class="fa-stack fa-lg"
+                  ><i class="fas fa-circle fa-stack-2x"></i
+                  ><i class="fab fa-github fa-stack-1x fa-inverse"></i></span
+              ></a>
+            </li>
+          </ul>
+          <div class="small text-center text-muted fst-italic">
+            Copyright © Your Website 2023
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+{% endmacro %}
+
+<!-- Page Header-->
+{% macro pageHeader(title, subtitle, image_url) %}
+  <header class="masthead" style="background-image: url('{{ image_url }}')">
+    <div class="container position-relative px-4 px-lg-5">
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+          <div class="page-heading">
+            <h1>{{ title }}</h1>
+            {% if subtitle %}
+              <span class="subheading">{{ subtitle }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+{% endmacro %}
+
+<!-- Label input-->
+{% macro input(name, label, type='text', placeholder='') %}
+  <div class="form-floating mb-3">
+    <input
+      class="form-control"
+      id="{{ name }}"
+      name="{{ name }}"
+      type="{{ type }}"
+      placeholder="{{ placeholder }}"
+      required
+    />
+    <label for="{{ name }}">{{ label }}</label>
+  </div>
+{% endmacro %}
+
+<!-- Label textarea-->
+{% macro textarea(name, label, placeholder='') %}
+  <div class="form-floating mb-3">
+    <textarea
+      class="form-control"
+      id="{{ name }}"
+      name="{{ name }}"
+      placeholder="{{ placeholder }}"
+      style="height: 12rem"
+      required
+    ></textarea>
+    <label for="{{ name }}">{{ label }}</label>
+  </div>
+{% endmacro %}
+
+<!-- Confirmation Modal -->
+{% macro confirmModal(id='confirmModal', title='Confirm Action', message='Are you sure?', confirmText='Confirm', cancelText='Cancel', confirmClass='btn-danger') %}
+  <div
+    class="modal fade"
+    id="{{ id }}"
+    tabindex="-1"
+    aria-labelledby="{{ id }}Label"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title text-dark font-weight-bold" id="{{ id }}Label">
+            {{ title }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="mb-0 text-muted">{{ message }}</p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            {{ cancelText }}
+          </button>
+          <button
+            type="button"
+            class="btn {{ confirmClass }}"
+            id="{{ id }}Confirm"
+          >
+            {{ confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+<!-- Admin Modal (Tailwind version for admin interface) -->
+{% macro adminConfirmModal(id='adminConfirmModal', title='Confirm Action', message='Are you sure?', confirmText='Confirm', cancelText='Cancel') %}
+  <div
+    id="{{ id }}"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50"
+  >
+    <div
+      class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+    >
+      <div class="mt-3">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-dark">{{ title }}</h3>
+          <button
+            type="button"
+            class="text-gray-400 hover:text-gray-600"
+            onclick="closeModal('{{ id }}')"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="mt-2 px-2 py-3">
+          <p class="text-sm text-secondary">{{ message }}</p>
+        </div>
+        <div class="flex items-center justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            class="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-400 transition-colors"
+            onclick="closeModal('{{ id }}')"
+          >
+            {{ cancelText }}
+          </button>
+          <button
+            type="button"
+            id="{{ id }}Confirm"
+            class="px-4 py-2 bg-danger text-white text-sm font-medium rounded-md hover:bg-opacity-90 transition-colors"
+          >
+            {{ confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showModal(modalId) {
+      document.getElementById(modalId).classList.remove("hidden");
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add("hidden");
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener("click", function (event) {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach((modal) => {
+        if (event.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+  </script>
+{% endmacro %}

@@ -1,0 +1,44 @@
+{% extends "_layout.html" %}
+{% from "_macros.html" import pageHeader, input, textarea %}
+
+{% block page_title %}Contact Me{% endblock %}
+
+{% block main_content %}
+
+  {{
+    pageHeader(
+        title='Contact Me',
+        subtitle='Have questions? I have answers.',
+        image_url='/images/contact-bg.jpg'
+    )
+  }}
+
+  <main class="mb-4">
+    <div class="container px-4 px-lg-5">
+      <div class="row gx-4 gx-lg-5 justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-7">
+          <p>
+            Want to get in touch? Fill out the form below to send me a message
+            and I will get back to you as soon as possible!
+          </p>
+          <div class="my-5">
+            <form id="contactForm" action="#" method="POST">
+              {{ input('name', 'Name', placeholder='Enter your name...') }}
+              {{ input('email', 'Email Address', 'email', 'Enter your email address...') }}
+              {{ input('phone', 'Phone Number', 'tel', 'Enter your phone number...') }}
+              {{ textarea('message', 'Message', 'Enter your message here...') }}
+              <br />
+              <button
+                class="btn btn-primary text-uppercase"
+                id="submitButton"
+                type="submit"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

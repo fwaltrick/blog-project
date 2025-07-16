@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" class="h-full bg-gray-50">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/heroicons@2.0.18/24/outline/index.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0085a1",
+              secondary: "#6c757d",
+              danger: "#dc3545",
+              dark: "#212529",
+            },
+            fontFamily: {
+              serif: ["Lora", "Georgia", "serif"],
+              sans: ["Open Sans", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="h-full font-sans">
+    <div class="min-h-screen bg-gray-50">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+          <div class="flex justify-between items-center mb-4">
+            <h1 class="text-xl font-sans font-semibold text-dark">
+              Admin Panel
+            </h1>
+            <nav class="flex space-x-6">
+              <a
+                href="/"
+                target="_blank"
+                class="text-secondary hover:text-primary transition-colors font-medium text-sm"
+                >View Site</a
+              >
+            </nav>
+          </div>
+          {% block header %}{% endblock %}
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="max-w-7xl mx-auto px-6 py-6">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>
