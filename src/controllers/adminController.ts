@@ -1,27 +1,6 @@
 import type { Request, Response } from "express";
 import { PostsModel } from "../models/PostsModel";
 
-// Helper function to handle JSON/redirect responses
-const handleResponse = (
-  req: Request,
-  res: Response,
-  options: {
-    success: boolean;
-    statusCode: number;
-    jsonData?: any;
-    redirectUrl: string;
-    errorMessage?: string;
-  },
-) => {
-  const { success, statusCode, jsonData, redirectUrl, errorMessage } = options;
-
-  if (req.headers.accept?.includes("application/json")) {
-    return res.status(statusCode).json(jsonData);
-  }
-
-  return res.redirect(redirectUrl);
-};
-
 // List all posts for admin
 export const adminPostsListController = (req: Request, res: Response) => {
   const posts = PostsModel.getAllPosts();
@@ -98,20 +77,17 @@ export const adminPostSubmitController = async (
     }
 
     if (!result && isEdit) {
-      return handleResponse(req, res, {
+      return res.status(404).json({
         success: false,
-        statusCode: 404,
-        jsonData: { success: false, error: "Post not found" },
-        redirectUrl: "/admin/posts?error=post_not_found",
+        error: "Post not found",
       });
     }
 
     const action = isEdit ? "updated" : "created";
-    return handleResponse(req, res, {
+    return res.status(isEdit ? 200 : 201).json({
       success: true,
-      statusCode: isEdit ? 200 : 201,
-      jsonData: { success: true, post: result },
-      redirectUrl: `/admin/posts?success=${action}`,
+      message: `Post ${action} successfully`,
+      post: result,
     });
   } catch (error) {
     console.error(
@@ -120,15 +96,10 @@ export const adminPostSubmitController = async (
     );
 
     const action = req.params.id ? "update" : "creation";
-    const fallbackUrl = req.params.id
-      ? `/admin/posts/${req.params.id}/edit?error=${action}_failed`
-      : "/admin/posts/new?error=creation_failed";
-
-    return handleResponse(req, res, {
+    return res.status(500).json({
       success: false,
-      statusCode: 500,
-      jsonData: { success: false, error: `${action} failed` },
-      redirectUrl: fallbackUrl,
+      error: `Post ${action} failed`,
+      message: "An error occurred while processing your request",
     });
   }
 };
@@ -143,28 +114,22 @@ export const adminDeletePostController = async (
     const success = PostsModel.deletePost(id);
 
     if (!success) {
-      return handleResponse(req, res, {
+      return res.status(404).json({
         success: false,
-        statusCode: 404,
-        jsonData: { success: false, error: "Post not found" },
-        redirectUrl: "/admin/posts?error=post_not_found",
+        error: "Post not found",
       });
     }
 
-    return handleResponse(req, res, {
+    return res.status(200).json({
       success: true,
-      statusCode: 200,
-      jsonData: { success: true, message: "Post deleted successfully" },
-      redirectUrl: "/admin/posts?success=deleted",
+      message: "Post deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting post:", error);
-
-    return handleResponse(req, res, {
+    return res.status(500).json({
       success: false,
-      statusCode: 500,
-      jsonData: { success: false, error: "Deletion failed" },
-      redirectUrl: "/admin/posts?error=deletion_failed",
+      error: "Post deletion failed",
+      message: "An error occurred while deleting the post",
     });
   }
 };

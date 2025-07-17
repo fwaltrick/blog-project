@@ -120,53 +120,7 @@
   </div>
 {% endmacro %}
 
-<!-- Confirmation Modal -->
-{% macro confirmModal(id='confirmModal', title='Confirm Action', message='Are you sure?', confirmText='Confirm', cancelText='Cancel', confirmClass='btn-danger') %}
-  <div
-    class="modal fade"
-    id="{{ id }}"
-    tabindex="-1"
-    aria-labelledby="{{ id }}Label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title text-dark font-weight-bold" id="{{ id }}Label">
-            {{ title }}
-          </h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body py-4">
-          <p class="mb-0 text-muted">{{ message }}</p>
-        </div>
-        <div class="modal-footer border-0 pt-0">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
-            {{ cancelText }}
-          </button>
-          <button
-            type="button"
-            class="btn {{ confirmClass }}"
-            id="{{ id }}Confirm"
-          >
-            {{ confirmText }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-{% endmacro %}
-
-<!-- Admin Modal (Tailwind version for admin interface) -->
+<!-- Admin Modal -->
 {% macro adminConfirmModal(id='adminConfirmModal', title='Confirm Action', message='Are you sure?', confirmText='Confirm', cancelText='Cancel') %}
   <div
     id="{{ id }}"

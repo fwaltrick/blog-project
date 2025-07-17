@@ -1,5 +1,5 @@
-{% extends "admin/_admin-layout.html" %}
-{% from "_macros.html" import adminConfirmModal %}
+{% extends "admin/_admin-layout.njk" %}
+{% from "_macros.njk" import adminConfirmModal %}
 
 {% block title %}Posts - Admin Panel{% endblock %}
 
@@ -211,12 +211,14 @@
           },
         });
 
+        const data = await response.json();
+        
         if (response.ok) {
           // Remove the post row from the table
           const row = document.querySelector(`tr[data-post-id="${id}"]`);
           if (row) {
             row.remove();
-            console.log("Post deleted successfully");
+            console.log(data.message);
 
             // Update search results
             const searchTerm = searchInput.value.toLowerCase().trim();
@@ -226,9 +228,8 @@
             location.reload();
           }
         } else {
-          const errorData = await response.json().catch(() => ({}));
-          console.error("Delete error:", errorData);
-          alert("Error deleting post. Please try again.");
+          console.error("Delete error:", data);
+          alert(data.message || "Error deleting post. Please try again.");
         }
       } catch (error) {
         console.error("Network error:", error);

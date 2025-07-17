@@ -11,7 +11,7 @@ The core challenge was to take the static "Clean Blog" theme and "re-package" it
 ## Core Features & Concepts
 
 - **Dynamic Public Blog**: Server-rendered posts from a JSON data source with clean, slug-based URLs, built on a modular frontend using template inheritance and macros.
-- **Full-Featured Admin Panel**: Manage all content with complete CRUD operations. Features a Quill.js rich text editor, image management, real-time search, and a clean, sequential ID system (/admin/posts/1/edit).
+- **Full-Featured Admin Panel**: Manage all content with complete CRUD operations. Features a Quill.js rich text editor, image management, real-time search, and a clean, sequential ID system.
 - **Robust Backend Architecture**: Built with TypeScript following a modular MVC (Model-View-Controller) pattern, ensuring a clean separation of concerns (data logic, routing, and presentation). The admin panel communicates via a REST-like API, handling asynchronous form submissions with the fetch API.
 
 ## Tech Stack

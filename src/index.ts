@@ -22,7 +22,7 @@ nunjucks.configure(path.join(__dirname, "..", "views"), {
   express: app,
 });
 
-app.set("view engine", "html");
+app.set("view engine", "njk");
 
 // Use the organized routes
 app.use("/", routes);

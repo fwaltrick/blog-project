@@ -1,4 +1,4 @@
-{% extends "admin/_admin-layout.html" %}
+{% extends "admin/_admin-layout.njk" %}
 
 {% block title %}
   {% if isEdit %}Edit Post{% else %}Create New Post{% endif %}
@@ -273,11 +273,14 @@
                 },
                 body: JSON.stringify(data),
               })
-                .then((response) => {
+                .then(async (response) => {
+                  const data = await response.json();
                   if (response.ok) {
-                    window.location.href = "/admin";
+                    // Show success message and redirect
+                    console.log(data.message);
+                    window.location.href = "/admin/posts";
                   } else {
-                    alert("Error updating post. Please try again.");
+                    alert(data.message || "Error updating post. Please try again.");
                   }
                 })
                 .catch((error) => {
@@ -294,11 +297,14 @@
                 },
                 body: JSON.stringify(data),
               })
-                .then((response) => {
+                .then(async (response) => {
+                  const data = await response.json();
                   if (response.ok) {
-                    window.location.href = "/admin";
+                    // Show success message and redirect
+                    console.log(data.message);
+                    window.location.href = "/admin/posts";
                   } else {
-                    alert("Error creating post. Please try again.");
+                    alert(data.message || "Error creating post. Please try again.");
                   }
                 })
                 .catch((error) => {
