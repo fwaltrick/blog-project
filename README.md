@@ -1,12 +1,12 @@
 # Blog with Express and Template Engine
 
-![alt text](image-1.png)
+![alt text](/public/images/readme-img-01.png)
 
 This project demonstrates the process of converting a static HTML theme into a dynamic, data-driven website with a full-featured admin panel using Express.js and the Nunjucks template engine. It was developed as a practical exercise for the Advanced Web Development course at Spiced Academy (AWD25).
 
 The core challenge was to take the static "Clean Blog" theme and "re-package" it into a modular and maintainable structure. This involved breaking down the original HTML into reusable components (layouts, partials, and macros) and dynamically generating the blog posts from a central JSON data source.
 
-![alt text](image.png)
+![alt text](/public/images/readme-img-02.png)
 
 ## Core Features & Concepts
 
