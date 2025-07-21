@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { PostsModel } from "../models/PostsModel";
 
-export const homeController = (req: Request, res: Response) => {
+export const homeController = async (req: Request, res: Response) => {
+  await PostsModel.loadPosts();
   const posts = PostsModel.getAllPosts();
 
   res.render("index", {

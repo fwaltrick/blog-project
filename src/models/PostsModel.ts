@@ -4,28 +4,43 @@ import dayjs from "dayjs";
 import postsData from "../../data/posts.json";
 import fs from "fs";
 import path from "path";
+import { getDB } from "../db/database";
 
 export class PostsModel {
-  private static posts: Post[] = PostsModel.loadPosts();
+  private static posts: Post[] = [];
 
-  private static loadPosts(): Post[] {
-    return postsData.map((post: any) => ({
-      ...post,
-      id: post.id || this.generateNextId(), // Generate sequential ID if it doesn't exist
-      image: post.image ?? "",
-      slug: slugify(post.title, { lower: true, strict: true }),
-      formattedDate: dayjs(post.createdAt * 1000).format("MMMM D, YYYY"),
-    }));
-  }
+  //   private static loadPosts(): Post[] {
+  //     return postsData.map((post: any) => ({
+  //       ...post,
+  //       id: post.id || this.generateNextId(), // Generate sequential ID if it doesn't exist
+  //       image: post.image ?? "",
+  //       slug: slugify(post.title, { lower: true, strict: true }),
+  //       formattedDate: dayjs(post.createdAt * 1000).format("MMMM D, YYYY"),
+  //     }));
+  //   }
 
-  private static generateNextId(): string {
-    // Get all current posts from the data, not this.posts which might be empty during loading
-    const currentPosts = postsData as Post[];
-    const existingIds = currentPosts
-      .map((post) => parseInt(post.id!))
-      .filter((id) => !isNaN(id));
-    const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
-    return (maxId + 1).toString();
+  static async loadPosts(): Promise<void> {
+    const db = getDB();
+    return new Promise<void>((resolve, reject) => {
+      db.all("SELECT * FROM posts", [], (err: Error | null, rows: Post[]) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Map the rows to Post format
+          const posts = rows.map((post) => ({
+            ...post,
+            id: post.id,
+            image: post.image ?? "",
+            slug: slugify(post.title, { lower: true, strict: true }),
+            formattedDate: dayjs(Number(post.createdAt) * 1000).format(
+              "MMMM D, YYYY",
+            ),
+          }));
+          this.posts = posts;
+          resolve();
+        }
+      });
+    });
   }
 
   static getAllPosts(): Post[] {
@@ -37,49 +52,88 @@ export class PostsModel {
   }
 
   static getPostById(id: string): Post | undefined {
-    return this.posts.find((post) => post.id === id);
+    return this.posts.find((post) => String(post.id) === id);
   }
 
-  static addPost(postData: Post): Post {
-    const newPost: Post = {
-      ...postData,
-      id: this.generateNextId(),
-      slug: slugify(postData.title, { lower: true, strict: true }),
-      formattedDate: dayjs(postData.createdAt * 1000).format("MMMM D, YYYY"),
-    };
-
-    this.posts.push(newPost);
-    this.savePosts();
-    return newPost;
+  // REMOVIDO: versão antiga addPost
+  static async addPost(postData: Post): Promise<Post> {
+    const db = getDB();
+    const createdAt = postData.createdAt
+      ? Number(postData.createdAt)
+      : Date.now();
+    return new Promise<Post>(async (resolve, reject) => {
+      db.run(
+        `INSERT INTO posts (title, teaser, author, createdAt, image, content)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          postData.title,
+          postData.teaser,
+          postData.author,
+          createdAt,
+          postData.image ?? "",
+          postData.content,
+        ],
+        async function (err: Error | null) {
+          if (err) {
+            reject(err);
+          } else {
+            await PostsModel.loadPosts();
+            const newPost = PostsModel.posts.find(
+              (p) =>
+                p.id === (this.lastID ? this.lastID.toString() : undefined),
+            );
+            resolve(newPost!);
+          }
+        },
+      );
+    });
   }
 
-  static updatePost(id: string, postData: Post): Post | null {
-    const index = this.posts.findIndex((post) => post.id === id);
-    if (index === -1) {
-      return null;
-    }
-
-    const updatedPost: Post = {
-      ...postData,
-      id,
-      slug: slugify(postData.title, { lower: true, strict: true }),
-      formattedDate: dayjs(postData.createdAt * 1000).format("MMMM D, YYYY"),
-    };
-
-    this.posts[index] = updatedPost;
-    this.savePosts();
-    return updatedPost;
+  static async updatePost(id: string, postData: Post): Promise<Post | null> {
+    const db = getDB();
+    return new Promise<Post | null>(async (resolve, reject) => {
+      db.run(
+        `UPDATE posts SET title = ?, teaser = ?, author = ?, createdAt = ?, image = ?, content = ? WHERE id = ?`,
+        [
+          postData.title,
+          postData.teaser,
+          postData.author,
+          postData.createdAt ? Number(postData.createdAt) : Date.now(),
+          postData.image ?? "",
+          postData.content,
+          id,
+        ],
+        async function (err: Error | null) {
+          if (err) {
+            reject(err);
+          } else {
+            await PostsModel.loadPosts();
+            const updatedPost = PostsModel.posts.find(
+              (p) => String(p.id) === String(id),
+            );
+            resolve(updatedPost ?? null);
+          }
+        },
+      );
+    });
   }
 
-  static deletePost(id: string): boolean {
-    const index = this.posts.findIndex((post) => post.id === id);
-    if (index === -1) {
-      return false;
-    }
-
-    this.posts.splice(index, 1);
-    this.savePosts();
-    return true;
+  static async deletePost(id: string): Promise<boolean> {
+    const db = getDB();
+    return new Promise<boolean>(async (resolve, reject) => {
+      db.run(
+        `DELETE FROM posts WHERE id = ?`,
+        [id],
+        async function (err: Error | null) {
+          if (err) {
+            reject(false);
+          } else {
+            await PostsModel.loadPosts();
+            resolve(true);
+          }
+        },
+      );
+    });
   }
 
   private static savePosts(): void {

@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
 import { PostsModel } from "../models/PostsModel";
+import sanitizeHtml from "sanitize-html";
 
-// List all posts for admin
-export const adminPostsListController = (req: Request, res: Response) => {
+// List all posts for admin (async, loads from DB)
+export const adminPostsListController = async (req: Request, res: Response) => {
+  await PostsModel.loadPosts();
   const posts = PostsModel.getAllPosts();
   res.render("admin/posts-list", {
     meta: { title: "Manage Posts" },
@@ -11,11 +13,12 @@ export const adminPostsListController = (req: Request, res: Response) => {
 };
 
 // Show create/edit post form
-export const adminPostFormController = (req: Request, res: Response) => {
+export const adminPostFormController = async (req: Request, res: Response) => {
   const id = req.params.id;
 
   if (id) {
     // Edit mode
+    await PostsModel.loadPosts();
     const post = PostsModel.getPostById(id);
     if (!post) {
       return res.status(404).render("404", {
@@ -47,32 +50,30 @@ export const adminPostSubmitController = async (
   try {
     const id = req.params.id;
     const { title, author, teaser, content, image, createdAt } = req.body;
+    const cleanContent = sanitizeHtml(content);
     const isEdit = !!id;
-
     let result;
+    let createdAtNum = Number(createdAt);
+    if (!createdAt || isNaN(createdAtNum)) {
+      createdAtNum = Math.floor(Date.now() / 1000);
+    }
     if (isEdit) {
-      // When editing, preserve the original createdAt from the existing post
-      const existingPost = PostsModel.getPostById(id);
-      result = PostsModel.updatePost(id, {
+      result = await PostsModel.updatePost(id, {
         title,
         author,
         teaser,
-        content,
+        content: cleanContent,
         image,
-        createdAt:
-          existingPost?.createdAt ||
-          parseInt(createdAt) ||
-          Math.floor(Date.now() / 1000),
+        createdAt: createdAtNum,
       });
     } else {
-      // When creating, use the provided createdAt or current timestamp
-      result = PostsModel.addPost({
+      result = await PostsModel.addPost({
         title,
         author,
         teaser,
-        content,
+        content: cleanContent,
         image,
-        createdAt: parseInt(createdAt) || Math.floor(Date.now() / 1000),
+        createdAt: createdAtNum,
       });
     }
 

@@ -94,7 +94,6 @@
             id="content"
             name="content"
             rows="12"
-            required
             style="display: none;"
             class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
@@ -132,11 +131,13 @@
         </div>
 
         <!-- Created At -->
+        {% if isEdit and post.createdAt %}
         <input
           type="hidden"
           name="createdAt"
-          value="{% if isEdit %}{{ post.createdAt }}{% else %}{{ currentTimestamp }}{% endif %}"
+          value="{{ post.createdAt }}"
         />
+        {% endif %}
 
         <!-- Submit Button -->
         <div class="flex items-center justify-end space-x-4">
