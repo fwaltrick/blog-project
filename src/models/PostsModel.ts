@@ -1,23 +1,10 @@
 import type { Post } from "../../types/model";
 import slugify from "slugify";
 import dayjs from "dayjs";
-import postsData from "../../data/posts.json";
-import fs from "fs";
-import path from "path";
 import { getDB } from "../db/database";
 
 export class PostsModel {
   private static posts: Post[] = [];
-
-  //   private static loadPosts(): Post[] {
-  //     return postsData.map((post: any) => ({
-  //       ...post,
-  //       id: post.id || this.generateNextId(), // Generate sequential ID if it doesn't exist
-  //       image: post.image ?? "",
-  //       slug: slugify(post.title, { lower: true, strict: true }),
-  //       formattedDate: dayjs(post.createdAt * 1000).format("MMMM D, YYYY"),
-  //     }));
-  //   }
 
   static async loadPosts(): Promise<void> {
     const db = getDB();
@@ -55,7 +42,6 @@ export class PostsModel {
     return this.posts.find((post) => String(post.id) === id);
   }
 
-  // REMOVIDO: versão antiga addPost
   static async addPost(postData: Post): Promise<Post> {
     const db = getDB();
     const createdAt = postData.createdAt
@@ -134,19 +120,5 @@ export class PostsModel {
         },
       );
     });
-  }
-
-  private static savePosts(): void {
-    const dataPath = path.join(__dirname, "../../data/posts.json");
-    const postsToSave = this.posts.map(
-      ({ slug, formattedDate, ...post }) => post,
-    );
-
-    try {
-      fs.writeFileSync(dataPath, JSON.stringify(postsToSave, null, 2));
-    } catch (error) {
-      console.error("Error saving posts:", error);
-      throw new Error("Failed to save posts");
-    }
   }
 }

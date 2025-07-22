@@ -12,6 +12,6 @@ router.get("/", homeController);
 router.get("/about", aboutController);
 router.get("/contact", contactController);
 
-router.get("/:slug", postDetailController); // Rota dinâmica deve ser por último
+router.get("/:slug", postDetailController);
 
 export default router;
